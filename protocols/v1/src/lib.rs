@@ -503,6 +503,10 @@ pub trait IsClient<'a> {
             }
         }
     }
+
+    fn suggest_difficulty(&mut self, id: u64, diff: u32) -> json_rpc::Message {
+        client_to_server::SuggestDifficulty { id, diff }.into()
+    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]

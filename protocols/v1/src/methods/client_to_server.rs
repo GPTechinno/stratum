@@ -654,7 +654,77 @@ impl From<InfoParams> for serde_json::Map<String, Value> {
     }
 }
 
-// mining.suggest_difficulty
+/// _mining.suggest_difficulty(preferred share difficulty Number)_
+///
+/// Used to indicate a preference for share difficulty to the pool.
+/// Servers are not required to honour this request, even if they support the stratum method.
+///
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SuggestDifficulty {
+    pub id: u64,
+    pub diff: u32,
+}
+
+impl SuggestDifficulty {
+    pub fn respond(self, is_ok: bool) -> Response {
+        // infallible
+        let result = serde_json::to_value(is_ok).unwrap();
+        Response {
+            id: self.id,
+            result,
+            error: None,
+        }
+    }
+}
+
+impl From<SuggestDifficulty> for Message {
+    fn from(sugg_diff: SuggestDifficulty) -> Self {
+        Message::StandardRequest(StandardRequest {
+            id: sugg_diff.id,
+            method: "mining.suggest_difficulty".into(),
+            params: (&[sugg_diff.diff][..]).into(),
+        })
+    }
+}
+
+impl TryFrom<StandardRequest> for SuggestDifficulty {
+    type Error = ParsingMethodError;
+
+    fn try_from(msg: StandardRequest) -> Result<Self, Self::Error> {
+        match msg.params.as_array() {
+            Some(params) => {
+                let diff = match &params[..] {
+                    [JNumber(a)] => a.as_u64().unwrap() as u32,
+                    _ => return Err(ParsingMethodError::wrong_args_from_value(msg.params)),
+                };
+                let id = msg.id;
+                Ok(Self { id, diff })
+            }
+            None => Err(ParsingMethodError::not_array_from_value(msg.params)),
+        }
+    }
+}
+
+#[cfg(test)]
+impl Arbitrary for SuggestDifficulty {
+    fn arbitrary(g: &mut Gen) -> Self {
+        SuggestDifficulty {
+            diff: u32::arbitrary(g),
+            id: u64::arbitrary(g),
+        }
+    }
+}
+
+#[cfg(test)]
+#[quickcheck_macros::quickcheck]
+fn from_to_json_rpc(sugg_diff: SuggestDifficulty) -> bool {
+    let message = Into::<Message>::into(sugg_diff.clone());
+    let request = match message {
+        Message::StandardRequest(s) => s,
+        _ => panic!(),
+    };
+    sugg_diff == TryInto::<SuggestDifficulty>::try_into(request).unwrap()
+}
 
 // mining.suggest_target
 
