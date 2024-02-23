@@ -717,7 +717,7 @@ impl Arbitrary for SuggestDifficulty {
 
 #[cfg(test)]
 #[quickcheck_macros::quickcheck]
-fn from_to_json_rpc(sugg_diff: SuggestDifficulty) -> bool {
+fn suggest_from_to_json_rpc(sugg_diff: SuggestDifficulty) -> bool {
     let message = Into::<Message>::into(sugg_diff.clone());
     let request = match message {
         Message::StandardRequest(s) => s,
