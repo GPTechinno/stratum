@@ -354,9 +354,12 @@ pub trait IsClient<'a> {
                 Ok(None)
             }
             methods::Server2ClientResponse::Submit(_) => Ok(None),
+            methods::Server2ClientResponse::SetDifficulty(mut set_diff) => {
+                self.handle_set_difficulty(&mut set_diff)?;
+                Ok(None)
+            }
             // impossible state
             methods::Server2ClientResponse::GeneralResponse(_) => panic!(),
-            methods::Server2ClientResponse::SetDifficulty(_) => Ok(None),
         }
     }
 
