@@ -118,7 +118,7 @@ pub struct ExtranonceSubscribe();
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Submit<'a> {
     pub user_name: String,            // root
-    pub job_id: String,               // 6
+    pub job_id: HexU32Be,             // 6
     pub extra_nonce2: Extranonce<'a>, // "8a.."
     pub time: HexU32Be,               //string
     pub nonce: HexU32Be,
@@ -170,33 +170,33 @@ impl<'a> TryFrom<StandardRequest> for Submit<'a> {
             Some(params) => {
                 let (user_name, job_id, extra_nonce2, time, nonce, version_bits) = match &params[..]
                 {
-                    [JString(a), JString(b), JString(c), JNumber(d), JNumber(e), JString(f)] => (
+                    [JString(a), JNumber(b), JString(c), JNumber(d), JNumber(e), JString(f)] => (
                         a.into(),
-                        b.into(),
+                        HexU32Be(b.as_u64().unwrap() as u32),
                         Extranonce::try_from(hex::decode(c)?)?,
                         HexU32Be(d.as_u64().unwrap() as u32),
                         HexU32Be(e.as_u64().unwrap() as u32),
                         Some((f.as_str()).try_into()?),
                     ),
-                    [JString(a), JString(b), JString(c), JString(d), JString(e), JString(f)] => (
+                    [JString(a), JNumber(b), JString(c), JString(d), JString(e), JString(f)] => (
                         a.into(),
-                        b.into(),
+                        HexU32Be(b.as_u64().unwrap() as u32),
                         Extranonce::try_from(hex::decode(c)?)?,
                         (d.as_str()).try_into()?,
                         (e.as_str()).try_into()?,
                         Some((f.as_str()).try_into()?),
                     ),
-                    [JString(a), JString(b), JString(c), JNumber(d), JNumber(e)] => (
+                    [JString(a), JNumber(b), JString(c), JNumber(d), JNumber(e)] => (
                         a.into(),
-                        b.into(),
+                        HexU32Be(b.as_u64().unwrap() as u32),
                         Extranonce::try_from(hex::decode(c)?)?,
                         HexU32Be(d.as_u64().unwrap() as u32),
                         HexU32Be(e.as_u64().unwrap() as u32),
                         None,
                     ),
-                    [JString(a), JString(b), JString(c), JString(d), JString(e)] => (
+                    [JString(a), JNumber(b), JString(c), JString(d), JString(e)] => (
                         a.into(),
-                        b.into(),
+                        HexU32Be(b.as_u64().unwrap() as u32),
                         Extranonce::try_from(hex::decode(c)?)?,
                         (d.as_str()).try_into()?,
                         (e.as_str()).try_into()?,
