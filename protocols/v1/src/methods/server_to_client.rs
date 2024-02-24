@@ -38,7 +38,7 @@ use crate::{
 ///
 #[derive(Debug, Clone)]
 pub struct Notify<'a> {
-    pub job_id: HexU32Be,
+    pub job_id: String,
     pub prev_hash: PrevHash<'a>,
     pub coin_base1: HexBytes,
     pub coin_base2: HexBytes,
@@ -103,7 +103,7 @@ impl<'a> TryFrom<Notification> for Notify<'a> {
         ) = match &params[..] {
             [JString(a), JString(b), JString(c), JString(d), JArrary(e), JString(f), JString(g), JString(h), JBool(i)] => {
                 (
-                    a.as_str().try_into()?,
+                    a.into(),
                     b.as_str().try_into()?,
                     c.as_str().try_into()?,
                     d.as_str().try_into()?,
