@@ -684,7 +684,7 @@ impl<T: Buffer> Buffer for BufferPool<T> {
 impl<T: Buffer> Drop for BufferPool<T> {
     fn drop(&mut self) {
         while self.shared_state.load(Ordering::Relaxed) != 0 {
-            std::hint::spin_loop();
+            core::hint::spin_loop();
         }
     }
 }

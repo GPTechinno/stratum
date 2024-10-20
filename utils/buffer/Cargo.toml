@@ -30,7 +30,8 @@ name = "pool_iai"
 harness = false
 
 [features]
-debug = []
+std = ["serde?/std"]
+debug = ["std"]
 fuzz = []
 with_serde = ["serde"]
 
