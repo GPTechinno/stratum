@@ -4,10 +4,10 @@ use crate::{
     datatypes::Sv2DataType,
     Error,
 };
-use core::convert::TryFrom;
-use std::convert::TryInto;
 
-#[cfg(not(feature = "no_std"))]
+use alloc::vec::Vec;
+use core::convert::{TryFrom, TryInto};
+#[cfg(feature = "std")]
 use std::io::{Error as E, Read, Write};
 
 #[repr(C)]
@@ -116,7 +116,7 @@ impl<'a, const ISFIXED: bool, const SIZE: usize, const HEADERSIZE: usize, const 
         }
     }
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     fn expected_length_for_reader(mut reader: impl Read) -> Result<usize, Error> {
         if ISFIXED {
             Ok(SIZE)
@@ -274,7 +274,7 @@ where
         Self::Owned(data)
     }
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     fn from_reader_(mut reader: &mut impl Read) -> Result<Self, Error> {
         let size = Self::expected_length_for_reader(&mut reader)?;
 
@@ -300,7 +300,7 @@ where
         }
     }
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     fn to_writer_(&self, writer: &mut impl Write) -> Result<(), E> {
         match self {
             Inner::Ref(data) => {

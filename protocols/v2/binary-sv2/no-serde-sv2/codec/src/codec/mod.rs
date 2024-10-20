@@ -8,6 +8,8 @@ use crate::Error;
 pub mod decodable;
 pub mod encodable;
 mod impls;
+
+use alloc::vec::Vec;
 #[cfg(feature = "with_buffer_pool")]
 use buffer_sv2::Slice;
 

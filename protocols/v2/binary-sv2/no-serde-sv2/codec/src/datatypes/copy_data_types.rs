@@ -1,8 +1,10 @@
 //! Copy data types
+
 use crate::{codec::Fixed, datatypes::Sv2DataType, Error};
+use alloc::vec::Vec;
 use core::convert::{TryFrom, TryInto};
 
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 use std::io::{Error as E, Read, Write};
 
 // Impl bool as a primitive
@@ -44,7 +46,7 @@ impl<'a> Sv2DataType<'a> for bool {
         Self::from_bytes_unchecked(&mut data)
     }
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     fn from_reader_(reader: &mut impl Read) -> Result<Self, Error> {
         let mut dst = [0_u8; Self::SIZE];
         reader.read_exact(&mut dst)?;
@@ -58,7 +60,7 @@ impl<'a> Sv2DataType<'a> for bool {
         };
     }
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     fn to_writer_(&self, writer: &mut impl Write) -> Result<(), E> {
         match self {
             true => writer.write_all(&[1]),
@@ -104,7 +106,7 @@ macro_rules! impl_sv2_for_unsigned {
                 Self::from_bytes_unchecked(&mut data)
             }
 
-            #[cfg(not(feature = "no_std"))]
+            #[cfg(feature = "std")]
             fn from_reader_(reader: &mut impl Read) -> Result<Self, Error> {
                 let mut dst = [0_u8; Self::SIZE];
                 reader.read_exact(&mut dst)?;
@@ -117,7 +119,7 @@ macro_rules! impl_sv2_for_unsigned {
                 dst.copy_from_slice(&src);
             }
 
-            #[cfg(not(feature = "no_std"))]
+            #[cfg(feature = "std")]
             fn to_writer_(&self, writer: &mut impl Write) -> Result<(), E> {
                 let bytes = self.to_le_bytes();
                 writer.write_all(&bytes)

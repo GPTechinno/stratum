@@ -12,10 +12,10 @@ pub use non_copy_data_types::{
     B0255, B032, B064K, U256,
 };
 
-#[cfg(not(feature = "no_std"))]
+use alloc::vec::Vec;
+use core::convert::TryInto;
+#[cfg(feature = "std")]
 use std::io::{Error as E, Read, Write};
-
-use std::convert::TryInto;
 
 pub trait Sv2DataType<'a>: Sized + SizeHint + GetSize + TryInto<FieldMarker> {
     fn from_bytes_(data: &'a mut [u8]) -> Result<Self, Error> {
@@ -29,7 +29,7 @@ pub trait Sv2DataType<'a>: Sized + SizeHint + GetSize + TryInto<FieldMarker> {
 
     fn from_vec_unchecked(data: Vec<u8>) -> Self;
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     fn from_reader_(reader: &mut impl Read) -> Result<Self, Error>;
 
     fn to_slice(&'a self, dst: &mut [u8]) -> Result<usize, Error> {
@@ -43,6 +43,6 @@ pub trait Sv2DataType<'a>: Sized + SizeHint + GetSize + TryInto<FieldMarker> {
 
     fn to_slice_unchecked(&'a self, dst: &mut [u8]);
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     fn to_writer_(&self, writer: &mut impl Write) -> Result<(), E>;
 }

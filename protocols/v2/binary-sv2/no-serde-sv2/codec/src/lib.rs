@@ -19,11 +19,20 @@
 //! Seq0255  <-> SEQ0_255[T]
 //! Seq064K  <-> SEQ0_64K[T]
 //! ```
-#[cfg(not(feature = "no_std"))]
+
+#![cfg_attr(not(feature = "std"), no_std)]
+
+#[cfg(feature = "std")]
 use std::io::{Error as E, ErrorKind};
+
+#[macro_use]
+extern crate alloc;
 
 mod codec;
 mod datatypes;
+
+use alloc::vec::Vec;
+
 pub use datatypes::{
     PubKey, Seq0255, Seq064K, ShortTxId, Signature, Str0255, Sv2DataType, Sv2Option, U32AsRef,
     B016M, B0255, B032, B064K, U24, U256,
@@ -61,9 +70,6 @@ pub mod encodable {
     pub use crate::codec::encodable::{Encodable, EncodableField, EncodablePrimitive};
 }
 
-#[macro_use]
-extern crate alloc;
-
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Error {
     OutOfBound,
@@ -83,9 +89,9 @@ pub enum Error {
     PrimitiveConversionError,
     DecodableConversionError,
     UnInitializedDecoder,
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     IoError(E),
-    #[cfg(feature = "no_std")]
+    #[cfg(not(feature = "std"))]
     IoError,
     ReadError(usize, usize),
     VoidFieldMarker,
@@ -100,7 +106,7 @@ pub enum Error {
     Sv2OptionHaveMoreThenOneElement(u8),
 }
 
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 impl From<E> for Error {
     fn from(v: E) -> Self {
         match v.kind() {
@@ -131,9 +137,9 @@ pub enum CError {
     PrimitiveConversionError,
     DecodableConversionError,
     UnInitializedDecoder,
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     IoError(E),
-    #[cfg(feature = "no_std")]
+    #[cfg(not(feature = "std"))]
     IoError,
     ReadError(usize, usize),
     VoidFieldMarker,
@@ -166,9 +172,9 @@ impl From<Error> for CError {
             Error::PrimitiveConversionError => CError::PrimitiveConversionError,
             Error::DecodableConversionError => CError::DecodableConversionError,
             Error::UnInitializedDecoder => CError::UnInitializedDecoder,
-            #[cfg(not(feature = "no_std"))]
+            #[cfg(feature = "std")]
             Error::IoError(e) => CError::IoError(e),
-            #[cfg(feature = "no_std")]
+            #[cfg(not(feature = "std"))]
             Error::IoError => CError::IoError,
             Error::ReadError(u1, u2) => CError::ReadError(u1, u2),
             Error::VoidFieldMarker => CError::VoidFieldMarker,
@@ -204,9 +210,9 @@ impl Drop for CError {
             Self::PrimitiveConversionError => (),
             Self::DecodableConversionError => (),
             Self::UnInitializedDecoder => (),
-            #[cfg(not(feature = "no_std"))]
+            #[cfg(feature = "std")]
             Self::IoError(_) => (),
-            #[cfg(feature = "no_std")]
+            #[cfg(not(feature = "std"))]
             Self::IoError => (),
             Self::ReadError(_, _) => (),
             Self::VoidFieldMarker => (),
@@ -279,7 +285,7 @@ impl From<&[u8]> for CVec {
         // Get the length, first, then the pointer (doing it the other way around **currently** doesn't cause UB, but it may be unsound due to unclear (to me, at least) guarantees of the std lib)
         let len = buffer.len();
         let ptr = buffer.as_mut_ptr();
-        std::mem::forget(buffer);
+        core::mem::forget(buffer);
 
         CVec {
             data: ptr,
@@ -295,7 +301,7 @@ impl From<&[u8]> for CVec {
 ///
 #[no_mangle]
 pub unsafe extern "C" fn cvec_from_buffer(data: *const u8, len: usize) -> CVec {
-    let input = std::slice::from_raw_parts(data, len);
+    let input = core::slice::from_raw_parts(data, len);
 
     let mut buffer: Vec<u8> = vec![0; len];
     buffer.copy_from_slice(input);
@@ -303,7 +309,7 @@ pub unsafe extern "C" fn cvec_from_buffer(data: *const u8, len: usize) -> CVec {
     // Get the length, first, then the pointer (doing it the other way around **currently** doesn't cause UB, but it may be unsound due to unclear (to me, at least) guarantees of the std lib)
     let len = buffer.len();
     let ptr = buffer.as_mut_ptr();
-    std::mem::forget(buffer);
+    core::mem::forget(buffer);
 
     CVec {
         data: ptr,
@@ -356,7 +362,7 @@ impl<'a, const A: bool, const B: usize, const C: usize, const D: usize>
                 let len = inner.len();
                 let cap = inner.capacity();
                 let ptr = inner.as_mut_ptr();
-                std::mem::forget(inner);
+                core::mem::forget(inner);
 
                 (ptr, len, cap)
             }
@@ -365,7 +371,7 @@ impl<'a, const A: bool, const B: usize, const C: usize, const D: usize>
                 let len = inner.len();
                 let cap = inner.capacity();
                 let ptr = inner.as_mut_ptr();
-                std::mem::forget(inner);
+                core::mem::forget(inner);
 
                 (ptr, len, cap)
             }
@@ -387,7 +393,7 @@ pub unsafe extern "C" fn init_cvec2() -> CVec2 {
     // Get the length, first, then the pointer (doing it the other way around **currently** doesn't cause UB, but it may be unsound due to unclear (to me, at least) guarantees of the std lib)
     let len = buffer.len();
     let ptr = buffer.as_mut_ptr();
-    std::mem::forget(buffer);
+    core::mem::forget(buffer);
 
     CVec2 {
         data: ptr,
@@ -407,7 +413,7 @@ pub unsafe extern "C" fn cvec2_push(cvec2: &mut CVec2, cvec: CVec) {
 
     let len = buffer.len();
     let ptr = buffer.as_mut_ptr();
-    std::mem::forget(buffer);
+    core::mem::forget(buffer);
 
     cvec2.data = ptr;
     cvec2.len = len;
@@ -421,7 +427,7 @@ impl<'a, T: Into<CVec>> From<Seq0255<'a, T>> for CVec2 {
         let len = v.len();
         let capacity = v.capacity();
         let data = v.as_mut_ptr();
-        std::mem::forget(v);
+        core::mem::forget(v);
         Self {
             data,
             len,
@@ -436,7 +442,7 @@ impl<'a, T: Into<CVec>> From<Seq064K<'a, T>> for CVec2 {
         let len = v.len();
         let capacity = v.capacity();
         let data = v.as_mut_ptr();
-        std::mem::forget(v);
+        core::mem::forget(v);
         Self {
             data,
             len,

@@ -52,7 +52,7 @@ impl<'a, const SIZE: usize> Seq064K<'a, super::inner::Inner<'a, true, SIZE, 0, 0
     }
 }
 
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 use std::io::Read;
 
 /// The liftime is here only for type compatibility with serde-sv2
@@ -192,7 +192,7 @@ macro_rules! impl_codec_for_sequence {
                 Ok(Self(inner, PhantomData))
             }
 
-            #[cfg(not(feature = "no_std"))]
+            #[cfg(feature = "std")]
             fn from_reader(reader: &mut impl Read) -> Result<Self, Error> {
                 let mut header = vec![0; Self::HEADERSIZE];
                 reader.read_exact(&mut header)?;
@@ -280,7 +280,10 @@ impl_into_encodable_field_for_seq!(B064K<'a>);
 impl_into_encodable_field_for_seq!(B016M<'a>);
 
 #[cfg(feature = "prop_test")]
-impl<'a, T> std::convert::TryFrom<Seq0255<'a, T>> for Vec<T> {
+use alloc::vec::Vec;
+
+#[cfg(feature = "prop_test")]
+impl<'a, T> core::convert::TryFrom<Seq0255<'a, T>> for Vec<T> {
     type Error = &'static str;
     fn try_from(v: Seq0255<'a, T>) -> Result<Self, Self::Error> {
         if v.0.len() > 255 {
@@ -292,7 +295,7 @@ impl<'a, T> std::convert::TryFrom<Seq0255<'a, T>> for Vec<T> {
 }
 
 #[cfg(feature = "prop_test")]
-impl<'a, T> std::convert::TryFrom<Seq064K<'a, T>> for Vec<T> {
+impl<'a, T> core::convert::TryFrom<Seq064K<'a, T>> for Vec<T> {
     type Error = &'static str;
     fn try_from(v: Seq064K<'a, T>) -> Result<Self, Self::Error> {
         if v.0.len() > 64 {

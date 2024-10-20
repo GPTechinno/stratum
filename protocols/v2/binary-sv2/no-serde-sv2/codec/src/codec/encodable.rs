@@ -6,14 +6,14 @@ use crate::{
     Error,
 };
 use alloc::vec::Vec;
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 use std::io::{Error as E, Write};
 
 pub trait Encodable {
     #[allow(clippy::wrong_self_convention)]
     fn to_bytes(self, dst: &mut [u8]) -> Result<usize, Error>;
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     #[allow(clippy::wrong_self_convention)]
     fn to_writer(self, dst: &mut impl Write) -> Result<(), E>;
 }
@@ -26,7 +26,7 @@ impl<'a, T: Into<EncodableField<'a>>> Encodable for T {
         encoded_field.encode(dst, 0)
     }
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     #[allow(clippy::wrong_self_convention, unconditional_recursion)]
     fn to_writer(self, dst: &mut impl Write) -> Result<(), E> {
         let encoded_field = self.into();
@@ -76,7 +76,7 @@ impl<'a> EncodablePrimitive<'a> {
         }
     }
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     pub fn write(&self, writer: &mut impl Write) -> Result<(), E> {
         match self {
             Self::U8(v) => v.to_writer_(writer),
@@ -145,7 +145,7 @@ impl<'a> EncodableField<'a> {
         }
     }
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     pub fn to_writer(&self, writer: &mut impl Write) -> Result<(), E> {
         match self {
             Self::Primitive(p) => p.write(writer),

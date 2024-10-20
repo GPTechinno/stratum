@@ -6,8 +6,8 @@ use crate::{
     Error,
 };
 use alloc::vec::Vec;
-use std::convert::TryFrom;
-#[cfg(not(feature = "no_std"))]
+use core::convert::TryFrom;
+#[cfg(feature = "std")]
 use std::io::{Cursor, Read};
 
 /// Implmented by all the decodable structure, it can be derived for every structure composed only
@@ -34,7 +34,7 @@ pub trait Decodable<'a>: Sized {
         Self::from_decoded_fields(fields)
     }
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     fn from_reader(reader: &mut impl Read) -> Result<Self, Error> {
         let mut data = Vec::new();
         reader.read_to_end(&mut data)?;
@@ -236,7 +236,7 @@ impl PrimitiveMarker {
     }
 
     #[allow(clippy::wrong_self_convention)]
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     #[allow(clippy::wrong_self_convention)]
     fn from_reader<'a>(&self, reader: &mut impl Read) -> Result<DecodablePrimitive<'a>, Error> {
         match self {
@@ -306,7 +306,7 @@ impl FieldMarker {
     }
 
     #[allow(clippy::wrong_self_convention)]
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     #[allow(clippy::wrong_self_convention)]
     pub(crate) fn from_reader<'a>(
         &self,
