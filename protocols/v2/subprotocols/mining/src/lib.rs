@@ -11,7 +11,6 @@
 //! ## Build Options
 //!
 //! This crate can be built with the following features:
-//! - `no_std`: Disables the standard library.
 //! - `with_serde`: Enables support for serialization and deserialization using Serde.
 //!
 //! **Note that `with_serde` feature flag is only used for the Message Generator, and deprecated
