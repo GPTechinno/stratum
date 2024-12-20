@@ -27,7 +27,9 @@
 //!
 //! For further information about the mining protocol, please refer to [Stratum V2 documentation -
 //! Mining Protocol](https://stratumprotocol.org/specification/05-Mining-Protocol/).
-#![cfg_attr(feature = "no_std", no_std)]
+
+#![no_std]
+
 use binary_sv2::{B032, U256};
 use core::{
     cmp::{Ord, PartialOrd},
